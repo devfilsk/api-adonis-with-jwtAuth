@@ -11,12 +11,16 @@ class ImageController {
     }
 
     async store ({ params, request }) {
+        console.log("Header", request.headers())
         const property = await Property.findOrFail(params.id);
+        console.log("FILEEEE", request.file('image'))
 
         const images = request.file('image', {
             types: ['image'],
             size: '2mb'
         })
+
+        console.log("IMAGES -- >", images)
 
         await images.moveAll(Helpers.tmpPath('uploads'), file => ({
             name: `${Date.now()}-${file.clientName}`
