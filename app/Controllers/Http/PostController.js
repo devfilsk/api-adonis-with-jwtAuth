@@ -20,10 +20,7 @@ class PostController {
    * @param {View} ctx.view
    */
   async index({ request, response, view }) {
-    const posts = Post.query()
-      .with(["images", "categories"])
-      .nearBy(latitude, longitude, 10)
-      .fetch();
+    const posts = Post.query().with(["images", "categories"]).fetch();
 
     return posts;
   }
@@ -58,7 +55,13 @@ class PostController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show({ params, request, response, view }) {}
+  async show({ params, request, response, view }) {
+    const post = await Post.findOrFail(params.id);
+
+    await post.load("images");
+
+    return post;
+  }
 
   /**
    * Render a form to update an existing post.

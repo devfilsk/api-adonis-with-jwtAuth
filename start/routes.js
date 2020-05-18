@@ -19,6 +19,7 @@ const Route = use("Route");
 Route.post("/users", "UserController.create");
 Route.get("/users", "UserController.show").middleware("auth");
 Route.post("/sessions", "SessionController.create");
-Route.resource("posts", "PostsController").apiOnly().middleware("auth");
+Route.resource("posts", "PostController").apiOnly().middleware("auth");
 Route.post("posts/:id/images", "ImageController.store").middleware("auth");
+Route.post("posts/:id", "ImageController.show").middleware("auth");
 Route.get("images/:path", "ImageController.show");
