@@ -20,7 +20,7 @@ class PostController {
    * @param {View} ctx.view
    */
   async index({ request, response, view }) {
-    const posts = Post.query().with(["images", "categories"]).fetch();
+    const posts = Post.query().with("images").with("categories").fetch();
 
     return posts;
   }
@@ -93,6 +93,20 @@ class PostController {
    * @param {Response} ctx.response
    */
   async destroy({ params, request, response }) {}
+
+  async presave({ params, request, response }) {
+    const { id, title_temp, post_temp, images } = request.all();
+    if (id) {
+      const post = await Post.findOrFail(id);
+      post.merge({ title_temp, post_temp });
+      await post.save();
+      console.log("POST --->", post);
+      return response.status(201).json(post);
+    } else {
+      const resp = await Post.create({ title_temp, post_temp });
+      return response.status(201).json(resp);
+    }
+  }
 }
 
 module.exports = PostController;
