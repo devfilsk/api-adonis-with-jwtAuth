@@ -9,8 +9,7 @@ class PostCategorySchema extends Schema {
       table.increments();
       table.string("category");
       table
-        .integer("post_id")
-        .unsigned()
+        .string("post_id")
         .references("id")
         .inTable("posts")
         .onUpdate("CASCADE")

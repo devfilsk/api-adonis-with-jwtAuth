@@ -8,8 +8,7 @@ class ImageSchema extends Schema {
     this.create("images", (table) => {
       table.increments();
       table
-        .integer("post_id")
-        .unsigned()
+        .string("post_id")
         .references("id")
         .inTable("posts")
         .onUpdate("CASCADE")

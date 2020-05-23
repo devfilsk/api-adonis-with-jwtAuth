@@ -94,16 +94,19 @@ class PostController {
    */
   async destroy({ params, request, response }) {}
 
-  async presave({ params, request, response }) {
+  async presave({ params, request, response, auth }) {
     const { id, title_temp, post_temp, images } = request.all();
+    const user_id = await auth.getUser();
     if (id) {
       const post = await Post.findOrFail(id);
-      post.merge({ title_temp, post_temp });
+      post.merge({ title_temp, post_temp, user_id: user_id.id });
       await post.save();
-      console.log("POST --->", post);
+      await post.reload();
       return response.status(201).json(post);
     } else {
       const resp = await Post.create({ title_temp, post_temp });
+      await resp.reload();
+
       return response.status(201).json(resp);
     }
   }
