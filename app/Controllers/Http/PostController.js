@@ -44,7 +44,15 @@ class PostController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store({ request, response }) {}
+  async store({ request, response }) {
+    const data = request.all();
+    const images = request.file("cover", {
+      types: ["image"],
+      size: "2mb",
+    });
+    console.log("=======>", data);
+    console.log("=====>==>", images);
+  }
 
   /**
    * Display a single post.
