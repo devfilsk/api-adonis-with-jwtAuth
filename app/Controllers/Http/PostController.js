@@ -1,6 +1,7 @@
 "use strict";
 
 const Post = use("App/Models/Post");
+const Helpers = use("Helpers");
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
@@ -50,6 +51,11 @@ class PostController {
       types: ["image"],
       size: "2mb",
     });
+    await images.moveAll(Helpers.tmpPath("uploads"), {
+      name: "custom-name.jpg",
+      overwrite: true,
+    });
+
     console.log("=======>", data);
     console.log("=====>==>", images);
   }
