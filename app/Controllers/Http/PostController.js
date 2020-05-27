@@ -1,6 +1,7 @@
 "use strict";
 
 const Post = use("App/Models/Post");
+const Image = use("App/Models/Image");
 const Helpers = use("Helpers");
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
@@ -45,19 +46,58 @@ class PostController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store({ request, response }) {
-    const data = request.all();
+  async store({ request, response, auth }) {
+    const baseFile = "http://localhost:3333/tmp/uploads/";
     const images = request.file("cover", {
       types: ["image"],
       size: "2mb",
     });
+    console.log("===>>=>", images);
     await images.moveAll(Helpers.tmpPath("uploads"), {
       name: "custom-name.jpg",
       overwrite: true,
     });
 
-    console.log("=======>", data);
-    console.log("=====>==>", images);
+    if (!images.movedAll()) {
+      return images.errors();
+    }
+
+    // Percorre as imagens e grava cada uma utilizando Promise pois o map e assíncrono
+
+    const { id, title, post, category, tags } = request.all();
+    const user_id = await auth.getUser();
+    if (id) {
+      const existePost = await Post.findOrFail(id);
+      existePost.merge({
+        title_temp: "",
+        title,
+        post_temp: "",
+        post,
+        user_id: user_id.id,
+      });
+
+      await Promise.all(
+        images
+          .movedList()
+          .map((image) =>
+            existePost.merge({ cover_path: baseFile + image.fileName })
+          )
+      );
+
+      await existePost.save();
+      await existePost.reload();
+      return response.status(201).json(existePost);
+    } else {
+      const resp = await Post.create({
+        title_temp: "",
+        title,
+        post_temp: "",
+        post,
+        user_id: user_id.id,
+      });
+      await resp.reload();
+      return response.status(201).json(resp);
+    }
   }
 
   /**
