@@ -13,9 +13,10 @@ class PostSchema extends Schema {
       table.string("title_temp");
       table.json("tags");
       table.text("post_temp");
-      table.integer("avaliation");
+      table.integer("avaliation").defaultTo(0);
       table.string("cover_path");
       table.boolean("published");
+      table.string("slug");
       table.integer("user_id").unsigned().references("id").inTable("users");
       table.timestamps();
     });

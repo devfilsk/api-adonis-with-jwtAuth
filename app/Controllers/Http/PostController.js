@@ -159,6 +159,7 @@ class PostController {
       return response.status(201).json(post);
     } else {
       const resp = await Post.create({ title_temp, post_temp });
+      console.log("RESP ==> ", resp);
       await resp.reload();
 
       return response.status(201).json(resp);

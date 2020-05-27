@@ -7,6 +7,12 @@ class Post extends Model {
   static boot() {
     super.boot();
     this.addHook("beforeCreate", "UuidHook.uuid");
+    this.addTrait("@provider:Lucid/Slugify", {
+      fields: {
+        slug: "title",
+      },
+      strategy: "dbIncrement",
+    });
   }
 
   user() {
