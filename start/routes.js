@@ -19,6 +19,7 @@ const Route = use("Route");
 Route.post("/users", "UserController.create");
 Route.get("/users", "UserController.show").middleware("auth");
 Route.post("/sessions", "SessionController.create");
+Route.post("/files", "ImageController.uploadS3");
 Route.resource("posts", "PostController").apiOnly().middleware("auth");
 Route.post("post/presave/:id?", "PostController.presave").middleware("auth");
 Route.post("posts/:id/images", "ImageController.store").middleware("auth");

@@ -4,6 +4,8 @@ const Post = use("App/Models/Post");
 const Image = use("App/Models/Image");
 const Helpers = use("Helpers");
 
+const Drive = use("Drive");
+
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
@@ -48,19 +50,19 @@ class PostController {
    */
   async store({ request, response, auth }) {
     const baseFile = "http://localhost:3333/tmp/uploads/";
-    const images = request.file("cover", {
-      types: ["image"],
-      size: "2mb",
-    });
-    console.log("===>>=>", images);
-    await images.moveAll(Helpers.tmpPath("uploads"), {
-      name: "custom-name.jpg",
-      overwrite: true,
-    });
+    // const images = request.file("cover", {
+    //   types: ["image"],
+    //   size: "2mb",
+    // });
+    // console.log("===>>=>", images);
+    // await images.moveAll(Helpers.tmpPath("uploads"), {
+    //   name: "custom-name.jpg",
+    //   overwrite: true,
+    // });
 
-    if (!images.movedAll()) {
-      return images.errors();
-    }
+    // if (!images.movedAll()) {
+    //   return images.errors();
+    // }
 
     // Percorre as imagens e grava cada uma utilizando Promise pois o map e assíncrono
 
@@ -76,22 +78,22 @@ class PostController {
         user_id: user_id.id,
       });
 
-      await Promise.all(
-        images
-          .movedList()
-          .map((image) =>
-            existePost.merge({ cover_path: baseFile + image.fileName })
-          )
-      );
+      // await Promise.all(
+      //   images
+      //     .movedList()
+      //     .map((image) =>
+      //       existePost.merge({ cover_path: baseFile + image.fileName })
+      //     )
+      // );
 
       await existePost.save();
       await existePost.reload();
       return response.status(201).json(existePost);
     } else {
       const resp = await Post.create({
-        title_temp: "",
+        title_temp: null,
         title,
-        post_temp: "",
+        post_temp: null,
         post,
         user_id: user_id.id,
       });
