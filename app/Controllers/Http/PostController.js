@@ -2,9 +2,6 @@
 
 const Post = use("App/Models/Post");
 const Image = use("App/Models/Image");
-const Helpers = use("Helpers");
-
-const Drive = use("Drive");
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
@@ -88,12 +85,13 @@ class PostController {
 
       await existePost.save();
       await existePost.reload();
+
       return response.status(201).json(existePost);
     } else {
       const resp = await Post.create({
-        title_temp: null,
+        title_temp: "",
         title,
-        post_temp: null,
+        post_temp: "",
         post,
         user_id: user_id.id,
       });
@@ -166,6 +164,44 @@ class PostController {
 
       return response.status(201).json(resp);
     }
+  }
+
+  async postImage({ request, params, response }) {
+    console.log("PATH ", params.path);
+    const { path } = params;
+    const today = new Date();
+    const year = today.toLocaleString("default", { year: "numeric" });
+    const month = today.toLocaleString("default", { month: "long" });
+    await request.multipart
+      .file("cover", {}, async (file) => {
+        try {
+          console.log("TESTEEE");
+          const ContentType = file.headers["content-type"];
+          const ACL = "public-read"; // necessário para não dar acesso negado
+
+          const url = await Drive.put(
+            `${year}/images/${month}/${path}`,
+            file.stream,
+            {
+              ContentType: file.headers["content-type"],
+              ACL: "public-read",
+            }
+          );
+          //   await Drive.put(`teste/${file.clientName}`, file.stream, {
+          //   ContentType: file.headers["content-type"],
+          //   ACL: "public-read",
+          //   });
+          console.log("URL ===> ", url);
+        } catch (err) {
+          return response.status(err.status).send({
+            error: {
+              message: "Não foi possível enviar o arquivo",
+              err_message: err.message,
+            },
+          });
+        }
+      })
+      .process();
   }
 }
 
