@@ -7,7 +7,23 @@ const Drive = use("Drive");
 
 class ImageController {
   async show({ params, response }) {
-    return response.download(Helpers.tmpPath(`uploads/${params.path}`));
+    const { id: name } = params;
+    try {
+      const post = Post.findByOrFail("cover_path", name);
+
+      response.implicitEnd = false;
+      response.header("Content-Type", "content-type");
+      const stream = await Drive.getStream(post.cover_path);
+      stream.pipe(response.response);
+    } catch (err) {
+      return response.status(err.status).send({
+        error: {
+          message: "O arquivo buscado não existe",
+          err_message: err.message,
+        },
+      });
+    }
+    // return response.download(Helpers.tmpPath(`uploads/${params.path}`));
   }
 
   async store({ params, request, response }) {
@@ -29,23 +45,21 @@ class ImageController {
           const today = new Date();
           const year = today.toLocaleString("default", { year: "numeric" });
           const month = today.toLocaleString("default", { month: "long" });
+          const path = `${year}/images/${month}/${post.slug}_cover`;
 
-          const url = await Drive.put(
-            `${year}/images/${month}/${post.slug}_cover`,
-            file.stream,
-            {
-              ContentType: file.headers["content-type"],
-              ACL: "public-read",
-            }
-          );
+          const url = await Drive.put(path, file.stream, {
+            ContentType: file.headers["content-type"],
+            ACL: "public-read",
+          });
 
           if (url) {
+            await Drive.delete(existePost.cover_path);
             post.merge({
-              cover_path: url,
+              cover_path: path,
             });
-            post.save();
+            await post.save();
           }
-          console.log("URL ===> ", url);
+          console.log("URL ===> ", path);
         } catch (err) {
           return response.status(err.status).send({
             error: {
@@ -84,7 +98,24 @@ class ImageController {
     // );
   }
 
-  async uploadS3({ request, params, response }) {}
+  async destroy({ request, params, response }) {
+    const { id: name } = params;
+    try {
+      const post = Post.findByOrFail("cover_path", name);
+
+      response.implicitEnd = false;
+      response.header("Content-Type", "content-type");
+      const stream = await Drive.getStream(post.cover_path);
+      stream.pipe(response.response);
+    } catch (err) {
+      return response.status(err.status).send({
+        error: {
+          message: "O arquivo buscado não existe",
+          err_message: err.message,
+        },
+      });
+    }
+  }
 }
 
 module.exports = ImageController;

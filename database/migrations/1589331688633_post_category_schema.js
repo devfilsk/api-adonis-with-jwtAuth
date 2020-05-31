@@ -14,6 +14,15 @@ class PostCategorySchema extends Schema {
         .inTable("posts")
         .onUpdate("CASCADE")
         .onDelete("CASCADE");
+
+      // table.string("post_id").unsigned().references("id").inTable("posts");
+      table
+        .integer("category_id")
+        .unsigned()
+        .references("id")
+        .inTable("categories");
+
+      table.string("slug");
       table.timestamps();
     });
   }

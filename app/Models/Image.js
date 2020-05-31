@@ -53,6 +53,20 @@ class Image extends Model {
       })
       .process();
   }
+
+  async deleteImage(path) {
+    try {
+      response.implicitEnd = false;
+      await Drive.delete(path);
+    } catch (err) {
+      return response.status(err.status).send({
+        error: {
+          message: "O arquivo buscado não existe e não pode ser excluído",
+          err_message: err.message,
+        },
+      });
+    }
+  }
 }
 
 module.exports = Image;

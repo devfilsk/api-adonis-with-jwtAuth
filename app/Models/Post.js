@@ -3,6 +3,8 @@
 /** @type {typeof import('@adonisjs/lucid/src/Lucid/Model')} */
 const Model = use("Model");
 
+const Env = use("Env");
+
 class Post extends Model {
   static boot() {
     super.boot();
@@ -15,6 +17,18 @@ class Post extends Model {
     });
   }
 
+  static get table() {
+    return "posts";
+  }
+
+  getCoverPath(cover_path) {
+    if (cover_path) {
+      return Env.get("S3_PATH") + cover_path;
+    } else {
+      return cover_path;
+    }
+  }
+
   user() {
     return this.belongsTo("App/Models/User");
   }
@@ -23,8 +37,13 @@ class Post extends Model {
     return this.hasMany("App/Models/Image");
   }
 
+  // categories() {
+  //   return this.hasOne("App/Models/PostCategory");
+  // }
   categories() {
-    return this.hasMany("App/Models/PostCategory");
+    return this.belongsToMany("App/Models/Category").pivotTable(
+      "post_categories"
+    );
   }
 }
 

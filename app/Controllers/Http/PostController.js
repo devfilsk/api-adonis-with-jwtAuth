@@ -2,6 +2,7 @@
 
 const Post = use("App/Models/Post");
 const Image = use("App/Models/Image");
+const Drive = use("Drive");
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
@@ -46,7 +47,6 @@ class PostController {
    * @param {Response} ctx.response
    */
   async store({ request, response, auth }) {
-    const baseFile = "http://localhost:3333/tmp/uploads/";
     // const images = request.file("cover", {
     //   types: ["image"],
     //   size: "2mb",
@@ -73,7 +73,13 @@ class PostController {
         post_temp: "",
         post,
         user_id: user_id.id,
+        tags: JSON.stringify(tags),
       });
+
+      if (category) {
+        await existePost.categories().attach([1, 2]);
+        // existePost.category = await existePost.categories().fetch("categories");
+      }
 
       // await Promise.all(
       //   images
@@ -85,6 +91,8 @@ class PostController {
 
       await existePost.save();
       await existePost.reload();
+      // await this.postImageNew(request, existePost.cover_path);
+      // await Image.deleteImage(existePost.cover_path);
 
       return response.status(201).json(existePost);
     } else {
@@ -151,6 +159,7 @@ class PostController {
   async presave({ params, request, response, auth }) {
     const { id, title_temp, post_temp, images } = request.all();
     const user_id = await auth.getUser();
+    console.log("ID", id);
     if (id) {
       const post = await Post.findOrFail(id);
       post.merge({ title_temp, post_temp, user_id: user_id.id });
@@ -159,8 +168,8 @@ class PostController {
       return response.status(201).json(post);
     } else {
       const resp = await Post.create({ title_temp, post_temp });
-      console.log("RESP ==> ", resp);
       await resp.reload();
+      console.log("RESP ==> ", resp);
 
       return response.status(201).json(resp);
     }
@@ -175,7 +184,8 @@ class PostController {
     await request.multipart
       .file("cover", {}, async (file) => {
         try {
-          console.log("TESTEEE");
+          await Drive.delete(existePost.cover_path);
+
           const ContentType = file.headers["content-type"];
           const ACL = "public-read"; // necessário para não dar acesso negado
 
@@ -199,6 +209,45 @@ class PostController {
               err_message: err.message,
             },
           });
+        }
+      })
+      .process();
+  }
+
+  async postImageNew({ request, path }) {
+    console.log("PATH ", path);
+    const today = new Date();
+    const year = today.toLocaleString("default", { year: "numeric" });
+    const month = today.toLocaleString("default", { month: "long" });
+    await request.multipart
+      .file("cover", {}, async (file) => {
+        try {
+          await Drive.delete(existePost.cover_path);
+
+          const ContentType = file.headers["content-type"];
+          const ACL = "public-read"; // necessário para não dar acesso negado
+
+          const url = await Drive.put(
+            `${year}/images/${month}/${path}`,
+            file.stream,
+            {
+              ContentType: file.headers["content-type"],
+              ACL: "public-read",
+            }
+          );
+          //   await Drive.put(`teste/${file.clientName}`, file.stream, {
+          //   ContentType: file.headers["content-type"],
+          //   ACL: "public-read",
+          //   });
+          console.log("URL ===> ", url);
+        } catch (err) {
+          console.log("EEERROO", err);
+          // return response.status(err.status).send({
+          //   error: {
+          //     message: "Não foi possível enviar o arquivo",
+          //     err_message: err.message,
+          //   },
+          // });
         }
       })
       .process();
