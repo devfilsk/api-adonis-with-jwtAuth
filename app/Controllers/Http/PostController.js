@@ -63,7 +63,7 @@ class PostController {
 
     // Percorre as imagens e grava cada uma utilizando Promise pois o map e assíncrono
 
-    const { id, title, post, category, tags } = request.all();
+    const { id, title, post, categories, tags, description } = request.all();
     const user_id = await auth.getUser();
     if (id) {
       const existePost = await Post.findOrFail(id);
@@ -74,10 +74,11 @@ class PostController {
         post,
         user_id: user_id.id,
         tags: JSON.stringify(tags),
+        description,
       });
 
-      if (category) {
-        await existePost.categories().attach([1, 2]);
+      if (categories) {
+        await existePost.categories().sync(categories);
         // existePost.category = await existePost.categories().fetch("categories");
       }
 
@@ -121,6 +122,7 @@ class PostController {
     const post = await Post.findOrFail(params.id);
 
     await post.load("images");
+    await post.load("categories");
 
     return post;
   }

@@ -11,8 +11,9 @@ class PostSchema extends Schema {
       table.string("title");
       table.text("post");
       table.string("title_temp");
-      table.json("tags");
       table.text("post_temp");
+      table.string("description");
+      table.json("tags");
       table.integer("avaliation").defaultTo(0);
       table.string("cover_path");
       table.boolean("published");

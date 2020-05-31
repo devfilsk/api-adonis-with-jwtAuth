@@ -4,7 +4,7 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-const Catgory = use("App/Models/Catgory");
+const Category = use("App/Models/Category");
 
 /**
  * Resourceful controller for interacting with categories
@@ -20,7 +20,7 @@ class CategoryController {
    * @param {View} ctx.view
    */
   async index({ request, response, view }) {
-    return await Catgory.all();
+    return await Category.all();
   }
 
   /**

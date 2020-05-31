@@ -27,7 +27,6 @@ class ImageController {
   }
 
   async store({ params, request, response }) {
-    console.log("PATH ", params.id);
     const { id } = params;
     const post = await Post.findOrFail(id);
     if (!post) {
@@ -41,7 +40,6 @@ class ImageController {
     await request.multipart
       .file("cover", {}, async (file) => {
         try {
-          console.log("TESTEEE");
           const today = new Date();
           const year = today.toLocaleString("default", { year: "numeric" });
           const month = today.toLocaleString("default", { month: "long" });
@@ -52,14 +50,17 @@ class ImageController {
             ACL: "public-read",
           });
 
-          if (url) {
-            await Drive.delete(existePost.cover_path);
-            post.merge({
-              cover_path: path,
-            });
-            await post.save();
+          if (post.cover_path) {
+            await Drive.delete(post.cover_path);
           }
-          console.log("URL ===> ", path);
+          await post.merge({
+            cover_path: path,
+          });
+          await post.save();
+          // }
+          return response.status(201).send({
+            message: "Imagem enviada com sucesso!",
+          });
         } catch (err) {
           return response.status(err.status).send({
             error: {
@@ -71,16 +72,12 @@ class ImageController {
       })
       .process();
 
-    // console.log("Header", request.headers());
     // const property = await Property.findOrFail(params.id);
-    // console.log("FILEEEE", request.file("image"));
 
     // const images = request.file("image", {
     //   types: ["image"],
     //   size: "2mb",
     // });
-
-    // console.log("IMAGES -- >", images);
 
     // await images.moveAll(Helpers.tmpPath("uploads"), (file) => ({
     //   name: `${Date.now()}-${file.clientName}`,
