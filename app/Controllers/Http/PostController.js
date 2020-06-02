@@ -22,7 +22,11 @@ class PostController {
    * @param {View} ctx.view
    */
   async index({ request, response, view }) {
-    const posts = Post.query().with("images").with("categories").fetch();
+    const posts = Post.query()
+      .with("images")
+      .with("categories")
+      .orderBy("created_at", "desc")
+      .fetch();
 
     return posts;
   }
@@ -75,25 +79,15 @@ class PostController {
         user_id: user_id.id,
         tags: JSON.stringify(tags),
         description,
+        published: true,
       });
 
       if (categories) {
         await existePost.categories().sync(categories);
-        // existePost.category = await existePost.categories().fetch("categories");
       }
-
-      // await Promise.all(
-      //   images
-      //     .movedList()
-      //     .map((image) =>
-      //       existePost.merge({ cover_path: baseFile + image.fileName })
-      //     )
-      // );
 
       await existePost.save();
       await existePost.reload();
-      // await this.postImageNew(request, existePost.cover_path);
-      // await Image.deleteImage(existePost.cover_path);
 
       return response.status(201).json(existePost);
     } else {

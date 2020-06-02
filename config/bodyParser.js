@@ -127,7 +127,12 @@ module.exports = {
     | is to true. Otherwise everything is processed manually.
     |
     */
-    processManually: ["/files", "/files/:path", "/posts/:id/images"],
+    processManually: [
+      "/files",
+      "/files/:path",
+      "/posts/:id/images",
+      "/posts/:id/postImage",
+    ],
 
     /*
     |--------------------------------------------------------------------------

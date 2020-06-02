@@ -21,6 +21,11 @@ class Post extends Model {
     return "posts";
   }
 
+  getTags(tags) {
+    console.log(tags);
+    return tags ? JSON.parse(tags) : [];
+  }
+
   getCoverPath(cover_path) {
     if (cover_path) {
       return Env.get("S3_PATH") + cover_path;
