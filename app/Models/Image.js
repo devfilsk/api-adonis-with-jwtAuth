@@ -15,6 +15,17 @@ class Image extends Model {
   getUrl({ path }) {
     return `${Env.get("APP_URL")}/tmp/uploads/${path}`;
   }
+  getCoverPath(path) {
+    if (path) {
+      return Env.get("S3_PATH") + path;
+    } else {
+      return path;
+    }
+  }
+
+  post() {
+    return this.belongsTo("App/Models/Post");
+  }
 
   async uploadS3(file, slug) {
     await file

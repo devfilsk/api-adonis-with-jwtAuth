@@ -118,6 +118,10 @@ class ImageController {
   async postImage({ params, request, response }) {
     const { id } = params;
     const post = await Post.findOrFail(id);
+    const images = await Image.query().where("post_id", id).getCount();
+    // return response.send(post);
+    // return response.send(post);
+    // await post.load("categories");
     if (!post) {
       return response.status(404).send({
         error: {
@@ -125,6 +129,8 @@ class ImageController {
         },
       });
     }
+    // return response.send(post);
+    console.log("POST ", images);
 
     await request.multipart
       .file("file", {}, async (file) => {
@@ -132,24 +138,31 @@ class ImageController {
           const today = new Date();
           const year = today.toLocaleString("default", { year: "numeric" });
           const month = today.toLocaleString("default", { month: "long" });
-          const name = post.slug ? post.slug : post.id;
-          const path = `${year}/images/${month}/${name}`;
+          const name = post.id;
+          const number = images ? `_${images}` : "";
+          const path = `${year}/images/${month}/${name}${number}`;
 
-          if (post.cover_path) {
-            await Drive.delete(post.cover_path);
-          }
+          // if (post.cover_path) {
+          //   await Drive.delete(post.cover_path);
+          // }
 
           const url = await Drive.put(path, file.stream, {
             ContentType: file.headers["content-type"],
             ACL: "public-read",
           });
 
-          await post.merge({
-            cover_path: path,
-          });
-          await post.save();
+          if (url) {
+            await post.images().create({ path: path });
+          }
+
+          // await post.merge({
+          //   cover_path: path,
+          // });
+          // await post.save();
           // }
-          console.log("URL --> => ", url);
+          console.log("NEW PATH", path);
+
+          console.log("URL --> ===> ", url);
           return response.status(201).send(url);
         } catch (err) {
           return response.status(err.status).send({
