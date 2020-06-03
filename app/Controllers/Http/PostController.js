@@ -67,7 +67,16 @@ class PostController {
 
     // Percorre as imagens e grava cada uma utilizando Promise pois o map e assíncrono
 
-    const { id, title, post, categories, tags, description } = request.all();
+    const {
+      id,
+      title,
+      post,
+      categories,
+      tags,
+      description,
+      images,
+    } = request.all();
+    console.log("IMA-GIS", images);
     const user_id = await auth.getUser();
     if (id) {
       const existePost = await Post.findOrFail(id);
