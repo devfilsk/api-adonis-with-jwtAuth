@@ -3,6 +3,7 @@
 const Post = use("App/Models/Post");
 const Image = use("App/Models/Image");
 const Drive = use("Drive");
+const Env = use("Env");
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
@@ -51,22 +52,6 @@ class PostController {
    * @param {Response} ctx.response
    */
   async store({ request, response, auth }) {
-    // const images = request.file("cover", {
-    //   types: ["image"],
-    //   size: "2mb",
-    // });
-    // console.log("===>>=>", images);
-    // await images.moveAll(Helpers.tmpPath("uploads"), {
-    //   name: "custom-name.jpg",
-    //   overwrite: true,
-    // });
-
-    // if (!images.movedAll()) {
-    //   return images.errors();
-    // }
-
-    // Percorre as imagens e grava cada uma utilizando Promise pois o map e assíncrono
-
     const {
       id,
       title,
@@ -76,7 +61,7 @@ class PostController {
       description,
       images,
     } = request.all();
-    console.log("IMA-GIS", images);
+
     const user_id = await auth.getUser();
     if (id) {
       const existePost = await Post.findOrFail(id);
@@ -90,6 +75,8 @@ class PostController {
         description,
         published: true,
       });
+
+      await this.removeDeletedImages(images, id);
 
       if (categories) {
         await existePost.categories().sync(categories);
@@ -109,6 +96,30 @@ class PostController {
       });
       await resp.reload();
       return response.status(201).json(resp);
+    }
+  }
+
+  async removeDeletedImages(images, id) {
+    // remove base_path of images
+    const basePath = Env.get("S3_PATH");
+    const textImages = [];
+    images.map((v) => {
+      textImages.push(v.replace(basePath, ""));
+    });
+    let imagesToDelete = await Image.query()
+      .where("post_id", id)
+      .whereNotIn("path", textImages)
+      .fetch();
+
+    if (imagesToDelete) {
+      imagesToDelete.toJSON().map(async (v) => {
+        await Drive.delete(v.path);
+      });
+
+      await Image.query()
+        .where("post_id", id)
+        .whereNotIn("path", textImages)
+        .delete();
     }
   }
 

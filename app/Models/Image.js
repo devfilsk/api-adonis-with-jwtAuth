@@ -13,7 +13,7 @@ class Image extends Model {
   }
 
   getUrl({ path }) {
-    return `${Env.get("APP_URL")}/tmp/uploads/${path}`;
+    return `${Env.get("S3_PATH")}/tmp/uploads/${path}`;
   }
   getCoverPath(path) {
     if (path) {
